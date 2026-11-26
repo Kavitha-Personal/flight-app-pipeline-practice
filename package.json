@@ -1,0 +1,24 @@
+{
+  "name": "flight-app-pipeline-practice",
+  "version": "1.0.0",
+  "description": "A small app and its Playwright tests in one repo, with a pull request pipeline",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --project=ui-chromium",
+    "test:api": "playwright test --project=api",
+    "test:headed": "playwright test --project=ui-chromium --headed",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^22.20.7",
+    "dotenv": "^18.0.10",
+    "typescript": "^5.9.3"
+  }
+}

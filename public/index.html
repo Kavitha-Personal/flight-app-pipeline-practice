@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flight Booking Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Flight Booking Demo</h1>
+
+    <section id="login-section" data-testid="login-section">
+      <p id="login-status" data-testid="login-status">Not logged in</p>
+      <form id="login-form" data-testid="login-form">
+        <label>Username <input id="login-username" data-testid="login-username" autocomplete="username" /></label>
+        <label>Password <input id="login-password" data-testid="login-password" type="password" autocomplete="current-password" /></label>
+        <button type="submit" data-testid="login-btn">Log in</button>
+      </form>
+      <button type="button" id="logout-btn" data-testid="logout-btn" hidden>Log out</button>
+    </section>
+
+    <form id="search-form">
+      <label>From
+        <select id="origin" data-testid="origin">
+          <option value="MEL">Melbourne (MEL)</option>
+          <option value="SYD">Sydney (SYD)</option>
+          <option value="BNE">Brisbane (BNE)</option>
+          <option value="PER">Perth (PER)</option>
+        </select>
+      </label>
+      <label>To
+        <select id="destination" data-testid="destination">
+          <option value="SYD" selected>Sydney (SYD)</option>
+          <option value="MEL">Melbourne (MEL)</option>
+          <option value="BNE">Brisbane (BNE)</option>
+          <option value="PER">Perth (PER)</option>
+        </select>
+      </label>
+      <button type="submit" data-testid="search-btn">Search flights</button>
+    </form>
+
+    <p id="error" data-testid="error" role="alert" hidden></p>
+
+    <section id="results" data-testid="results" aria-live="polite"></section>
+
+    <section id="booking-panel" data-testid="booking-panel" hidden>
+      <h2>Passenger details</h2>
+      <p data-testid="selected-flight" id="selected-flight"></p>
+      <label>First name <input id="first-name" data-testid="first-name" /></label>
+      <label>Last name <input id="last-name" data-testid="last-name" /></label>
+      <button type="button" id="confirm-btn" data-testid="confirm-btn">Confirm booking</button>
+    </section>
+
+    <p id="confirmation" data-testid="confirmation" hidden></p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

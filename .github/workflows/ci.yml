@@ -1,0 +1,83 @@
+name: CI - build, start the app, run tests
+
+# WHEN does this workflow run? (these are the "triggers")
+on:
+  pull_request:                    # runs when a PR is opened, updated with new commits, or reopened
+    branches: [main]
+  push:
+    branches: [main]               # runs after a merge lands on main
+  workflow_dispatch:               # manual "Run workflow" button
+
+permissions:
+  contents: read
+
+concurrency:                       # a new push to the same PR cancels the older run
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:                            # <- this job name is what you select as a "required status check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Show what triggered this run
+        run: |
+          echo "Event:  ${{ github.event_name }}"
+          echo "Branch: ${{ github.head_ref || github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Checkout the PR code (app AND tests)
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check the tests
+        run: npm run typecheck
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # The test accounts live in GitHub Secrets (Settings -> Secrets and variables -> Actions).
+      # Fail fast with a clear message if one is missing, instead of a confusing 401 later.
+      - name: Check required secrets exist
+        env:
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          OTHER_USERNAME: ${{ secrets.OTHER_USERNAME }}
+          OTHER_PASSWORD: ${{ secrets.OTHER_PASSWORD }}
+        run: |
+          for name in TEST_USERNAME TEST_PASSWORD OTHER_USERNAME OTHER_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret $name is missing. Add it under Settings -> Secrets and variables -> Actions."
+              exit 1
+            fi
+          done
+
+      # Playwright starts the app itself (see "webServer" in playwright.config.ts),
+      # logs the test users in once (setup project), runs the API and UI tests, then stops the app.
+      - name: Run tests against the app
+        env:
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          OTHER_USERNAME: ${{ secrets.OTHER_USERNAME }}
+          OTHER_PASSWORD: ${{ secrets.OTHER_PASSWORD }}
+          BASE_URL: ${{ vars.BASE_URL }}     # leave this variable UNSET to test the app started by the tests
+        run: npx playwright test
+
+      - name: Upload report and evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
